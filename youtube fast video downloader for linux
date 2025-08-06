@@ -1,0 +1,81 @@
+# Update package lists && install dependencies (python3, pip, ffmpeg) && install yt-dlp via pip
+                                                                                    sudo apt update -y && sudo apt install -y python3 python3-pip ffmpeg && sudo pip3 install --upgrade yt-dlp
+
+# Verify installation and show version
+yt-dlp --version
+
+# (Optional) Create symlink as 'youtube-dl' for compatibility
+                                                                                    sudo ln -sf /usr/local/bin/yt-dlp /usr/local/bin/youtube-dl
+#this is for continusly downloading videos 
+yt-dlp -f 137+140 -P /home/wikivic/Downloads 'url of the video'
+
+
+
+##a scrpt use to download audio aur video options
+
+                                                                                      sudo apt update && sudo apt install -y yt-dlp ffmpeg aria2
+
+
+#!/bin/bash
+
+# Check required tools
+for cmd in yt-dlp aria2c ffmpeg; do
+    command -v "$cmd" &> /dev/null || {
+        echo "❌ $cmd not found. Install with: sudo apt install -y yt-dlp ffmpeg aria2"
+        exit 1
+    }
+done
+
+downloads_dir="$HOME/Downloads"
+mkdir -p "$downloads_dir"
+
+while true; do
+    # Get URL
+    read -p "Enter YouTube URL: " url
+    [[ -z "$url" || ! "$url" =~ ^https?:// ]] && { echo "❌ Invalid URL"; continue; }
+
+    # Choose mode
+    echo -e "\n1. Download video (MP4)\n2. Extract audio (MP3)"
+    read -p "Select (1/2): " choice
+    [[ "$choice" != "1" && "$choice" != "2" ]] && { echo "❌ Invalid choice"; continue; }
+
+    # Common options
+    opts=(
+        --external-downloader aria2c
+        --external-downloader-args "-x16 -s16 -k1M"
+        -P "$downloads_dir"
+        -o "%(title)s.%(ext)s"
+        --no-warnings
+        --embed-thumbnail
+        --embed-metadata
+    )
+
+    # Action
+    if [ "$choice" == "1" ]; then
+        yt-dlp "${opts[@]}" -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]" --merge-output-format mp4 "$url" \
+        && echo -e "\n✅ Video saved to $downloads_dir" || echo -e "\n❌ Download failed"
+    else
+        yt-dlp "${opts[@]}" -x --audio-format mp3 "$url" \
+        && echo -e "\n✅ MP3 saved to $downloads_dir" || echo -e "\n❌ Download failed"
+    fi
+
+    # Ask to continue
+    read -p $'\nDo you want to download another? (y/n): ' again
+    [[ "$again" != [Yy]* ]] && break
+done
+
+echo -e "\n👋 Exiting. Goodbye!"
+exit 0
+
+
+
+#ends
+#save it as .sh file 
+
+# then
+                                                                                   chmod +x python_script.sh
+#then
+                                                                                   ./python_script.sh
+
+
+
